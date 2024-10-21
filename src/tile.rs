@@ -1,64 +1,132 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use image::{GenericImageView, ImageBuffer, Rgba};
 
-#[derive(Clone)]
-pub enum Tile {
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum TileType {
     Empty,
     Character,
     Grass,
+    TallGrass,
+    DeepWater,
+    ShallowWater,
+    Hill,
+    Mountain,
+    Beach,
+}
+
+#[derive(Hash, PartialEq, Eq, Clone)]
+pub enum Navigation {
+    Wall,
+    Floor,
+}
+
+#[derive(Hash, PartialEq, Eq, Clone)]
+pub struct Tile {
+    pub kind: TileType,
+    sprite: Vec<u8>,
+    pub navigation: Navigation,
 }
 
 pub struct TileMap {
-    image: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    pub tiles: HashMap<TileType, Tile>,
 }
 
 impl TileMap {
     pub fn new(path: PathBuf) -> Self {
-        TileMap {
-            image: image::open(path).unwrap().into_rgba8(),
-        }
-    }
-    pub fn sprite(&self, tile: &Tile) -> Vec<u8> {
-        match tile {
-            Tile::Empty => vec![15; 64],
-            Tile::Character => self
-                .image
-                .view(328, 32, 8, 8)
-                .pixels()
-                .map(|(_, _, i)| if i.0[3] == 0 { 15 } else { 10 })
-                .collect(),
-            Tile::Grass => self
-                .image
-                .view(64, 216, 8, 8)
-                .pixels()
-                .map(|(_, _, i)| if i.0[3] == 0 { 15 } else { 2 })
-                .collect(),
-        }
-    }
-}
+        let image = image::open(path).unwrap().into_rgba8();
+        let tiles = HashMap::from([
+            (
+                TileType::Empty,
+                Tile {
+                    kind: TileType::Empty,
+                    sprite: vec![15; 64],
+                    navigation: Navigation::Floor,
+                },
+            ),
+            (
+                TileType::Character,
+                Tile {
+                    kind: TileType::Character,
+                    sprite: Self::grab_sprite(&image, 328, 32, 15, 10),
+                    navigation: Navigation::Wall,
+                },
+            ),
+            (
+                TileType::ShallowWater,
+                Tile {
+                    kind: TileType::ShallowWater,
+                    sprite: Self::grab_sprite(&image, 96, 192, 15, 3),
+                    navigation: Navigation::Wall,
+                },
+            ),
+            (
+                TileType::DeepWater,
+                Tile {
+                    kind: TileType::DeepWater,
+                    sprite: Self::grab_sprite(&image, 96, 208, 15, 8),
+                    navigation: Navigation::Wall,
+                },
+            ),
+            (
+                TileType::Hill,
+                Tile {
+                    kind: TileType::Hill,
+                    sprite: Self::grab_sprite(&image, 224, 208, 15, 11),
+                    navigation: Navigation::Floor,
+                },
+            ),
+            (
+                TileType::Mountain,
+                Tile {
+                    kind: TileType::Mountain,
+                    sprite: Self::grab_sprite(&image, 232, 208, 15, 10),
+                    navigation: Navigation::Floor,
+                },
+            ),
+            (
+                TileType::Beach,
+                Tile {
+                    kind: TileType::Beach,
+                    sprite: Self::grab_sprite(&image, 176, 208, 15, 1),
+                    navigation: Navigation::Floor,
+                },
+            ),
+            (
+                TileType::TallGrass,
+                Tile {
+                    kind: TileType::TallGrass,
+                    sprite: Self::grab_sprite(&image, 192, 208, 15, 2),
+                    navigation: Navigation::Floor,
+                },
+            ),
+            (
+                TileType::Grass,
+                Tile {
+                    kind: TileType::Grass,
+                    sprite: Self::grab_sprite(&image, 64, 216, 15, 2),
+                    navigation: Navigation::Floor,
+                },
+            ),
+        ]);
 
-pub fn pattern_1(width: usize, height: usize) -> Vec<Tile> {
-    let mut tiles = vec![Tile::Empty; width * height];
+        TileMap { tiles }
+    }
+    fn grab_sprite(
+        image: &ImageBuffer<Rgba<u8>, Vec<u8>>,
+        x_pos: u32,
+        y_pos: u32,
+        bg: u8,
+        fg: u8,
+    ) -> Vec<u8> {
+        image
+            .view(x_pos, y_pos, 8, 8)
+            .pixels()
+            .map(|(_, _, i)| if i.0[3] == 0 { bg } else { fg })
+            .collect()
+    }
 
-    tiles[width / 2 + (width * height / 2)] = Tile::Character;
-    tiles[10 + 10 * width] = Tile::Grass;
-    tiles[13 + 11 * width] = Tile::Grass;
-    tiles[21 + 22 * width] = Tile::Grass;
-    tiles[20 + 23 * width] = Tile::Grass;
-    tiles
-    //tiles
-    //    .iter_mut()
-    //    .enumerate()
-    //    .map(|(i, _)| {
-    //        let x = i % width;
-    //        let y = i / height;
-    //
-    //        if (x + y) % 2 == 0 {
-    //            Tile::Character
-    //        } else {
-    //            Tile::Grass
-    //        }
-    //    })
-    //    .collect()
+    pub fn sprite(&self, tile: &TileType) -> &Vec<u8> {
+        &self.tiles.get(tile).unwrap().sprite
+    }
 }

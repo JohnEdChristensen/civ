@@ -1,7 +1,9 @@
 #![deny(clippy::all)]
 #![forbid(unsafe_code)]
 
-use civ::tile::{pattern_1, Tile, TileMap};
+use civ::character::{Character, Direction};
+use civ::map::Map;
+use civ::tile::{TileMap, TileType};
 use error_iter::ErrorIter as _;
 use log::error;
 use pixels::{Error, Pixels, SurfaceTexture};
@@ -12,8 +14,8 @@ use winit::keyboard::KeyCode;
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 
-const WIDTH: usize = 32;
-const HEIGHT: usize = 24;
+const WIDTH: usize = 32 * 2;
+const HEIGHT: usize = 24 * 2;
 
 const TILE_SIZE: usize = 8;
 
@@ -40,12 +42,8 @@ const PALLETTE: [[u8; 4]; 16] = [
 
 /// Representation of the application state. In this example, a box will bounce around the screen.
 struct World {
-    box_x: i16,
-    box_y: i16,
-    velocity_x: i16,
-    velocity_y: i16,
-    tiles: Vec<Tile>,
-    tile_map: TileMap,
+    map: Map,
+    character: Character,
 }
 
 fn main() -> Result<(), Error> {
@@ -101,6 +99,18 @@ fn main() -> Result<(), Error> {
                     return;
                 }
             }
+            if input.key_held(KeyCode::KeyW) {
+                world.character.try_move_to(Direction::Up, &world.map);
+            }
+            if input.key_held(KeyCode::KeyA) {
+                world.character.try_move_to(Direction::Left, &world.map);
+            }
+            if input.key_held(KeyCode::KeyS) {
+                world.character.try_move_to(Direction::Down, &world.map);
+            }
+            if input.key_held(KeyCode::KeyD) {
+                world.character.try_move_to(Direction::Right, &world.map);
+            }
 
             // Update internal state and request a redraw
             world.update();
@@ -121,70 +131,46 @@ impl World {
     /// Create a new `World` instance that can draw a moving box.
     fn new() -> Self {
         Self {
-            box_x: 24,
-            box_y: 16,
-            velocity_x: 1,
-            velocity_y: 1,
-            tiles: pattern_1(WIDTH, HEIGHT),
-            tile_map: TileMap::new("assets/minimal_8_v1.2.png".into()),
+            map: Map::new(
+                WIDTH,
+                HEIGHT,
+                TileMap::new("assets/minimal_8_v1.2.png".into()),
+            ),
+            character: Character {
+                tile: TileType::Character,
+                x: WIDTH / 2,
+                y: HEIGHT / 2,
+            },
         }
     }
 
     /// Update the `World` internal state; bounce the box around the screen.
-    fn update(&mut self) {
-        //if self.box_x <= 0 || self.box_x + BOX_SIZE > WIDTH as i16 {
-        //    self.velocity_x *= -1;
-        //}
-        //if self.box_y <= 0 || self.box_y + BOX_SIZE > HEIGHT as i16 {
-        //    self.velocity_y *= -1;
-        //}
-        //
-        self.box_x += self.velocity_x;
-        self.box_y += self.velocity_y;
-    }
+    fn update(&mut self) {}
 
     /// Draw the `World` state to the frame buffer.
-    ///
     /// Assumes the default texture format: `wgpu::TextureFormat::Rgba8UnormSrgb`
     fn draw(&self, frame: &mut [u8]) {
-        for (i, tile) in self.tiles.iter().enumerate() {
-            let sprite = self.tile_map.sprite(tile);
-            let tx = i % WIDTH;
-            let ty = i / WIDTH;
-            //println!("{tx},{ty}");
-            let px = tx * TILE_SIZE;
+        let layered_tiles = self
+            .map
+            .layer(self.character.tile, self.character.x, self.character.y);
+        for (ty, row) in layered_tiles.iter().enumerate() {
+            for (tx, tile) in row.iter().enumerate() {
+                let sprite = self.map.tile_map.sprite(tile);
+                //println!("{tx},{ty}");
+                let px = tx * TILE_SIZE;
 
-            sprite.chunks(TILE_SIZE).enumerate().for_each(|(j, row)| {
-                let row_colors = row
-                    .iter()
-                    .flat_map(|c| PALLETTE[*c as usize])
-                    .collect::<Vec<_>>();
-                let py = (ty * TILE_SIZE) + j;
-                //println!("  {px},{py}");
-                let start = (px + py * (WIDTH * TILE_SIZE)) * 4;
-                let end = start + TILE_SIZE * 4;
-                frame[start..end].copy_from_slice(&row_colors);
-            });
-
-            //
-            //    pixel.copy_from_slice(&rgba);
-            //for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            //    let x = (i % WIDTH as usize) as i16;
-            //    let y = (i / WIDTH as usize) as i16;
-            //
-            //    let inside_the_box = x >= self.box_x
-            //        && x < self.box_x + BOX_SIZE
-            //        && y >= self.box_y
-            //        && y < self.box_y + BOX_SIZE;
-            //
-            //    let rgba = if inside_the_box {
-            //        [0x5e, 0x48, 0xe8, 0xff]
-            //    } else {
-            //        [0x48, 0xb2, 0xe8, 0xff]
-            //    };
-            //
-            //    pixel.copy_from_slice(&rgba);
-            //}
+                sprite.chunks(TILE_SIZE).enumerate().for_each(|(j, row)| {
+                    let row_colors = row
+                        .iter()
+                        .flat_map(|c| PALLETTE[*c as usize])
+                        .collect::<Vec<_>>();
+                    let py = (ty * TILE_SIZE) + j;
+                    //println!("  {px},{py}");
+                    let start = (px + py * (WIDTH * TILE_SIZE)) * 4;
+                    let end = start + TILE_SIZE * 4;
+                    frame[start..end].copy_from_slice(&row_colors);
+                });
+            }
         }
     }
 }
