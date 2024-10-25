@@ -56,7 +56,7 @@ impl TileMap {
                 TileType::ShallowWater,
                 Tile {
                     kind: TileType::ShallowWater,
-                    sprite: Self::grab_sprite(&image, 96, 192, 15, 3),
+                    sprite: Self::grab_sprite(&image, 96, 192, 10, 3),
                     navigation: Navigation::Wall,
                 },
             ),
@@ -64,7 +64,7 @@ impl TileMap {
                 TileType::DeepWater,
                 Tile {
                     kind: TileType::DeepWater,
-                    sprite: Self::grab_sprite(&image, 96, 208, 15, 8),
+                    sprite: Self::grab_sprite(&image, 96, 208, 11, 8),
                     navigation: Navigation::Wall,
                 },
             ),
@@ -72,7 +72,7 @@ impl TileMap {
                 TileType::Hill,
                 Tile {
                     kind: TileType::Hill,
-                    sprite: Self::grab_sprite(&image, 224, 208, 15, 11),
+                    sprite: Self::grab_sprite(&image, 224, 208, 12, 11),
                     navigation: Navigation::Floor,
                 },
             ),
@@ -80,7 +80,7 @@ impl TileMap {
                 TileType::Mountain,
                 Tile {
                     kind: TileType::Mountain,
-                    sprite: Self::grab_sprite(&image, 232, 208, 15, 10),
+                    sprite: Self::grab_sprite(&image, 232, 208, 11, 10),
                     navigation: Navigation::Floor,
                 },
             ),
@@ -88,7 +88,7 @@ impl TileMap {
                 TileType::Beach,
                 Tile {
                     kind: TileType::Beach,
-                    sprite: Self::grab_sprite(&image, 176, 208, 15, 1),
+                    sprite: Self::grab_sprite(&image, 176, 208, 13, 6),
                     navigation: Navigation::Floor,
                 },
             ),
@@ -96,7 +96,7 @@ impl TileMap {
                 TileType::TallGrass,
                 Tile {
                     kind: TileType::TallGrass,
-                    sprite: Self::grab_sprite(&image, 192, 208, 15, 2),
+                    sprite: Self::grab_sprite(&image, 192, 208, 7, 2),
                     navigation: Navigation::Floor,
                 },
             ),

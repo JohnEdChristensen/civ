@@ -13,6 +13,14 @@ pub struct Map {
 
 impl Map {
     pub fn new(width: usize, height: usize, tile_map: TileMap) -> Self {
+        Map {
+            width,
+            height,
+            tiles: Self::map_gen(width, height, 0., 0.),
+            tile_map,
+        }
+    }
+    pub fn map_gen(width: usize, height: usize, x: f64, y: f64) -> Vec<Vec<TileType>> {
         let noise_width = 0.6;
         let noise_height = noise_width; //noise_width * (height / width) as f64;
                                         //let fbm = Fbm::<Perlin>::new(0);
@@ -21,13 +29,13 @@ impl Map {
 
         let noise = PlaneMapBuilder::new(fbm)
             .set_size(width, height)
-            .set_x_bounds(-noise_width, noise_width)
-            .set_y_bounds(-noise_height, noise_height)
+            .set_x_bounds(-noise_width + x, noise_width + x)
+            .set_y_bounds(-noise_height + y, noise_height + y)
             .build()
             .into_iter()
             .chunks(width);
 
-        let tiles: Vec<Vec<TileType>> = noise
+        noise
             .into_iter()
             .map(|row| {
                 row.map(|v| match v {
@@ -41,32 +49,16 @@ impl Map {
                 })
                 .collect()
             })
-            .collect();
-        //let tiles = flat_tiles
-        //    .chunks(width)
-        //    .map(|&row| row.iter().copied().collect())
-        //    .collect();
-        //let tiles: Vec<Vec<Tile>> = (0..height)
-        //    .map(|_| {
-        //        (0..width)
-        //            .map(|_| match rng.sample(range) {
-        //                0 => Tile::Grass,
-        //                _ => Tile::Empty,
-        //            })
-        //            .collect()
-        //    })
-        //    .collect();
-
-        Map {
-            width,
-            height,
-            tiles,
-            tile_map,
-        }
+            .collect()
     }
     pub fn layer(&self, tile: TileType, x: usize, y: usize) -> Vec<Vec<TileType>> {
         let mut out = self.tiles.clone();
         out[y][x] = tile;
         out
+    }
+    pub fn shift_to_point(&mut self, x: i32, y: i32) {
+        let x = (1.2 / self.width as f64) * x as f64;
+        let y = (1.2 / self.height as f64) * y as f64;
+        self.tiles = Self::map_gen(self.width, self.height, x, y)
     }
 }
