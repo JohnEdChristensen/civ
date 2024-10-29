@@ -1,8 +1,7 @@
-#![deny(clippy::all)]
 #![forbid(unsafe_code)]
 
-use civ::world::{World, PX_HEIGHT, PX_WIDTH};
 use error_iter::ErrorIter as _;
+use flow::world::{World, PX_HEIGHT, PX_WIDTH};
 use log::error;
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
@@ -15,7 +14,7 @@ use winit_input_helper::WinitInputHelper;
 fn main() -> Result<(), Error> {
     env_logger::init();
 
-    let mut world = World::new();
+    let mut world = World {};
 
     //// Setup Window
     let event_loop = EventLoop::new().unwrap();
@@ -23,7 +22,7 @@ fn main() -> Result<(), Error> {
     let mut input = WinitInputHelper::new();
     let window = {
         let size = LogicalSize::new(PX_WIDTH as f64, PX_HEIGHT as f64);
-        let scaled = LogicalSize::new(size.width * 2.4, size.height * 2.4);
+        let scaled = LogicalSize::new(size.width * 2.4 * 2., size.height * 2.4 * 2.);
         WindowBuilder::new()
             .with_title(":)")
             .with_inner_size(scaled)
