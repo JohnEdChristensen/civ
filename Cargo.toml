@@ -5,6 +5,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+derive_more = { version = "1.0.0", features = ["add", "add_assign", "constructor", "mul", "mul_assign"] }
 env_logger = "0.10"
 error-iter = "0.4"
 itertools = "0.13.0"

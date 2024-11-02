@@ -14,7 +14,7 @@ use winit_input_helper::WinitInputHelper;
 fn main() -> Result<(), Error> {
     env_logger::init();
 
-    let mut world = World {};
+    let mut world = World::default();
 
     //// Setup Window
     let event_loop = EventLoop::new().unwrap();
