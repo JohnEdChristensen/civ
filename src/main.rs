@@ -51,6 +51,9 @@ fn main() -> Result<(), Error> {
                 return;
             }
         }
+        if let Some(dt) = input.delta_time() {
+            world.fluid.update(dt.as_secs_f64());
+        }
 
         // Handle input events
         if input.update(&event) {

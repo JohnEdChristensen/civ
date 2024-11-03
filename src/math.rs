@@ -12,13 +12,18 @@ pub struct Vec2 {
 
 impl Vec2 {
     pub fn sqr_magnitude(&self) -> f64 {
-        self.x.powf(2.) + self.y.powf(2.)
+        self.x.powi(2) + self.y.powi(2)
     }
     pub fn magnitude(&self) -> f64 {
-        (self.x.powf(2.) + self.y.powf(2.)).sqrt()
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
     }
     pub fn norm(&self) -> Vec2 {
-        self * (1. / self.magnitude())
+        let mag = self.magnitude();
+        if mag != 0. {
+            self * (1. / mag)
+        } else {
+            panic!("can't normalize zero!")
+        }
     }
 }
 

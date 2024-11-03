@@ -10,7 +10,7 @@ pub const PX_HEIGHT: usize = 150;
 #[derive(Default)]
 pub struct World {
     frame_count: i32,
-    fluid: Fluid,
+    pub fluid: Fluid,
 }
 
 impl World {
@@ -43,10 +43,10 @@ impl World {
         if event.key_pressed(KeyCode::KeyW) {
             println!("thats a 'w'!");
         }
-        let dt = event.delta_time().unwrap().as_secs_f64();
+        //let dt = event.delta_time().unwrap().as_secs_f64();
 
         //// step
-        self.fluid.update(dt);
+        //self.fluid.update(dt);
 
         true
     }
